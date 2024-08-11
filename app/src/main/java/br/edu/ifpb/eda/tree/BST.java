@@ -1,7 +1,11 @@
 package br.edu.ifpb.eda.tree;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
     private BSTNode<T> root;
+    private int size;
 
     private BSTNode<T> get(T element, BSTNode<T> root) {
         if (root == null)
@@ -25,6 +29,11 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
         if (root.left == null)
             return root.element;
         return minimum(root.left);
+    }
+
+    @Override
+    public int size() {
+        return size;
     }
 
     @Override
@@ -65,6 +74,7 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
 
     @Override
     public void insert(T element) {
+        this.size++;
         if (root == null)
             root = new BSTNode<T>(element);
         else
@@ -81,6 +91,8 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
 
     @Override
     public void delete(T element) {
+        this.size--;
+
         BSTNode<T> node = get(element);
 
         if (node == null)
@@ -98,5 +110,47 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
         T tmp = node.left != null ? predecessor(node) : successor(node);
         delete(tmp);
         node.element = tmp;
+    }
+
+    private List<T> preorder(BSTNode<T> root, List<T> elements) {
+        elements.addLast(root.element);
+        if (root.left != null)
+            preorder(root.left, elements);
+        if (root.right != null)
+            preorder(root.right, elements);
+        return elements;
+    }
+
+    @Override
+    public List<T> preorder() {
+        return preorder(root, new ArrayList<T>(size));
+    }
+
+    private List<T> inorder(BSTNode<T> root, List<T> elements) {
+        if (root.left != null)
+            inorder(root.left, elements);
+        elements.addLast(root.element);
+        if (root.right != null)
+            inorder(root.right, elements);
+        return elements;
+    }
+
+    @Override
+    public List<T> inorder() {
+        return inorder(root, new ArrayList<T>(size));
+    }
+
+    private List<T> postorder(BSTNode<T> root, List<T> elements) {
+        if (root.left != null)
+            postorder(root.left, elements);
+        if (root.right != null)
+            postorder(root.right, elements);
+        elements.addLast(root.element);
+        return elements;
+    }
+
+    @Override
+    public List<T> postorder() {
+        return postorder(root, new ArrayList<T>(size));
     }
 }

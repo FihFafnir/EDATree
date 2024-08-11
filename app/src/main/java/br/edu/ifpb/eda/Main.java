@@ -11,8 +11,12 @@ public class Main {
         bst.insert(3);
         bst.insert(4);
         bst.insert(10);
-        bst.delete(3);
+        // bst.delete(3);
+        System.out.println(bst.size());
         System.out.println(bst.minimum());
         System.out.println(bst.maximum());
+        System.out.println(bst.preorder());
+        System.out.println(bst.inorder());
+        System.out.println(bst.postorder());
     }
 }
