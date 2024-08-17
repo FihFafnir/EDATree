@@ -17,14 +17,14 @@ public class Main {
         bst.insert(8);
         System.out.println(bst);
         // bst.delete(8);
-        // bst.delete(9);
+        bst.delete(9);
         System.out.println(bst);
         // bst.insert(10);
         // System.out.println(bst.size());
         // System.out.println(bst.minimum());
         // System.out.println(bst.maximum());
         // System.out.println(bst.preorder());
-        // System.out.println(bst.inorder());
+        System.out.println(bst.inorder());
         // System.out.println(bst.postorder());
 
         // bst.delete(3);
