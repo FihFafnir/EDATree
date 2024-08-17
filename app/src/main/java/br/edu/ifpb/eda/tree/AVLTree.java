@@ -83,14 +83,14 @@ public class AVLTree<T extends Comparable<T>> implements BinarySearchTree<T> {
         return tmp;
     }
 
-    private AVLNode<T> rotateToLeftAndRight(AVLNode<T> node) {
-        node.left = rotateToLeft(node.left);
-        return rotateToRight(node);
+    private AVLNode<T> rotateToLeftAndRight(AVLNode<T> root) {
+        root.left = rotateToLeft(root.left);
+        return rotateToRight(root);
     }
 
-    private AVLNode<T> rotateToRightAndLeft(AVLNode<T> node) {
-        node.right = rotateToRight(node.right);
-        return rotateToLeft(node);
+    private AVLNode<T> rotateToRightAndLeft(AVLNode<T> root) {
+        root.right = rotateToRight(root.right);
+        return rotateToLeft(root);
     }
 
     private AVLNode<T> balance(AVLNode<T> root) {
