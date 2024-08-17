@@ -5,23 +5,7 @@ import java.util.List;
 
 public class AVLTree<T extends Comparable<T>> implements BinarySearchTree<T> {
     private AVLNode<T> root;
-    private int size;
-
-    private AVLNode<T> getParent(T element, AVLNode<T> root) {
-        if (root == null)
-            return null;
-
-        int comparison = element.compareTo(root.element);
-        if (comparison < 0 && root.left.element != element)
-            return getParent(element, root.left);
-        if (comparison > 0 && root.right.element != element)
-            return getParent(element, root.right);
-        return root;
-    }
-
-    private AVLNode<T> getParent(T element) {
-        return getParent(element, root);
-    }
+    private int size = 0;
 
     private AVLNode<T> get(T element, AVLNode<T> root) {
         if (root == null)
@@ -39,11 +23,11 @@ public class AVLTree<T extends Comparable<T>> implements BinarySearchTree<T> {
         return get(element, root);
     }
 
-    private T minimum(AVLNode<T> root) {
+    private AVLNode<T> minimum(AVLNode<T> root) {
         if (root == null)
             return null;
         if (root.left == null)
-            return root.element;
+            return root;
         return minimum(root.left);
     }
 
@@ -54,20 +38,20 @@ public class AVLTree<T extends Comparable<T>> implements BinarySearchTree<T> {
 
     @Override
     public T minimum() {
-        return minimum(root);
+        return minimum(root).element;
     }
 
-    private T maximum(AVLNode<T> root) {
+    private AVLNode<T> maximum(AVLNode<T> root) {
         if (root == null)
             return null;
         if (root.right == null)
-            return root.element;
+            return root;
         return maximum(root.right);
     }
 
     @Override
     public T maximum() {
-        return maximum(root);
+        return maximum(root).element;
     }
 
     @Override
@@ -87,6 +71,8 @@ public class AVLTree<T extends Comparable<T>> implements BinarySearchTree<T> {
     }
 
     private AVLNode<T> rotateToRight(AVLNode<T> node) {
+        if (node.left.element.compareTo(node.element) == 0)
+            return node;
         AVLNode<T> tmp = node.left;
         node.left = tmp.right;
         tmp.right = node;
@@ -108,86 +94,80 @@ public class AVLTree<T extends Comparable<T>> implements BinarySearchTree<T> {
     }
 
     private AVLNode<T> balance(AVLNode<T> root) {
-        AVLNode<T> currentRoot = root;
-        if (root.getBalancingFactor() > 1) {
-            currentRoot = (root.left.getBalancingFactor() > 0)
+        if (root == null)
+            return null;
+        if (root.getBalancingFactor() > 1)
+            return (root.left.getBalancingFactor() > 0)
                     ? rotateToRight(root)
                     : rotateToLeftAndRight(root);
-        } else if (root.getBalancingFactor() < -1) {
-            currentRoot = (root.right.getBalancingFactor() < 0)
+        if (root.getBalancingFactor() < -1)
+            return (root.right.getBalancingFactor() < 0)
                     ? rotateToLeft(root)
                     : rotateToRightAndLeft(root);
-        }
-        return currentRoot;
+        return root;
     }
 
-    private void insert(AVLNode<T> node, AVLNode<T> root) {
-        int comparison = node.element.compareTo(root.element);
+    private AVLNode<T> insert(AVLNode<T> root, T element) {
+        if (root == null)
+            return new AVLNode<T>(element);
 
-        if (comparison <= 0) {
-            if (root.left == null)
-                root.left = node;
-            else
-                insert(node, root.left);
-        } else {
-            if (root.right == null)
-                root.right = node;
-            else
-                insert(node, root.right);
-        }
+        if (element.compareTo(root.element) <= 0)
+            root.left = insert(root.left, element);
+        else
+            root.right = insert(root.right, element);
 
         root.updateHeight();
-        if (root.left != null)
-            root.left = balance(root.left);
-        if (root.right != null)
-            root.right = balance(root.right);
+        return balance(root);
     }
 
     @Override
     public void insert(T element) {
         this.size++;
-        AVLNode<T> node = new AVLNode<T>(element);
-
-        if (root == null)
-            root = node;
-        else
-            insert(node, root);
-
-        this.root = balance(root);
+        this.root = insert(root, element);
     }
 
-    private T predecessor(AVLNode<T> root) {
+    private AVLNode<T> predecessor(AVLNode<T> root) {
         return maximum(root.left);
     }
 
-    private T successor(AVLNode<T> root) {
+    private AVLNode<T> successor(AVLNode<T> root) {
         return minimum(root.right);
+    }
+
+    private AVLNode<T> delete(AVLNode<T> root, T element) {
+        if (root == null || element == null)
+            return null;
+
+        int comparison = element.compareTo(root.element);
+        if (comparison == 0) {
+            AVLNode<T> substitute = root.left != null ? predecessor(root) : successor(root);
+
+            if (substitute != null) {
+                if (substitute.element.compareTo(root.element) <= 0)
+                    root.left = delete(root.left, substitute.element);
+                else
+                    root.right = delete(root.right, substitute.element);
+                substitute.left = root.left;
+                substitute.right = root.right;
+                substitute.updateHeight();
+            }
+
+            return balance(substitute);
+        }
+
+        if (comparison < 0)
+            root.left = delete(root.left, element);
+        else
+            root.right = delete(root.right, element);
+
+        root.updateHeight();
+        return balance(root);
     }
 
     @Override
     public void delete(T element) {
-        // TODO
         this.size--;
-
-        AVLNode<T> parent = getParent(element);
-        AVLNode<T> node = element.compareTo(parent.element) <= 0 ? parent.left : parent.right;
-
-        if (node == null)
-            return;
-
-        if (node.left == null && node.right == null) {
-            if (element.compareTo(parent.element) <= 0)
-                parent.left = null;
-            else
-                parent.right = null;
-            // parent.updateHeight();
-            return;
-        }
-
-        T tmp = node.left != null ? predecessor(node) : successor(node);
-        delete(tmp);
-        node.element = tmp;
-        // node.updateHeight();
+        this.root = delete(root, element);
     }
 
     private List<T> preorder(AVLNode<T> root, List<T> elements) {

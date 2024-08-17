@@ -10,4 +10,10 @@ public class BSTNode<T extends Comparable<T>> {
         this.left = this.right = null;
     }
 
+    @Override
+    public String toString() {
+        String leftString = left == null ? "*" : left.toString();
+        String rightString = right == null ? "*" : right.toString();
+        return element.toString() + "(" + leftString + ", " + rightString + ")";
+    }
 }

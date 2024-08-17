@@ -5,23 +5,7 @@ import java.util.List;
 
 public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
     private BSTNode<T> root;
-    private int size;
-
-    private BSTNode<T> getParent(T element, BSTNode<T> root) {
-        if (root == null)
-            return null;
-
-        int comparison = element.compareTo(root.element);
-        if (comparison < 0 && root.left.element != element)
-            return getParent(element, root.left);
-        if (comparison > 0 && root.right.element != element)
-            return getParent(element, root.right);
-        return root;
-    }
-
-    private BSTNode<T> getParent(T element) {
-        return getParent(element, root);
-    }
+    private int size = 0;
 
     private BSTNode<T> get(T element, BSTNode<T> root) {
         if (root == null)
@@ -39,11 +23,11 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
         return get(element, root);
     }
 
-    private T minimum(BSTNode<T> root) {
+    private BSTNode<T> minimum(BSTNode<T> root) {
         if (root == null)
             return null;
         if (root.left == null)
-            return root.element;
+            return root;
         return minimum(root.left);
     }
 
@@ -54,20 +38,20 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
 
     @Override
     public T minimum() {
-        return minimum(root);
+        return minimum(root).element;
     }
 
-    private T maximum(BSTNode<T> root) {
+    private BSTNode<T> maximum(BSTNode<T> root) {
         if (root == null)
             return null;
         if (root.right == null)
-            return root.element;
+            return root;
         return maximum(root.right);
     }
 
     @Override
     public T maximum() {
-        return maximum(root);
+        return maximum(root).element;
     }
 
     @Override
@@ -75,57 +59,67 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
         return get(element) != null;
     }
 
-    private void insert(T element, BSTNode<T> root) {
+    private BSTNode<T> insert(BSTNode<T> root, T element) {
+        if (root == null)
+            return new BSTNode<T>(element);
+
         int comparison = element.compareTo(root.element);
         if (comparison <= 0)
-            if (root.left == null)
-                root.left = new BSTNode<T>(element);
-            else
-                insert(element, root.left);
-        else if (root.right == null)
-            root.right = new BSTNode<T>(element);
+            root.left = insert(root.left, element);
         else
-            insert(element, root.right);
+            root.right = insert(root.right, element);
+        return root;
     }
 
     @Override
     public void insert(T element) {
         this.size++;
-        if (root == null)
-            root = new BSTNode<T>(element);
-        else
-            insert(element, root);
+        this.root = insert(root, element);
     }
 
-    private T predecessor(BSTNode<T> root) {
+    private BSTNode<T> predecessor(BSTNode<T> root) {
+        if (root == null)
+            return null;
         return maximum(root.left);
     }
 
-    private T successor(BSTNode<T> root) {
+    private BSTNode<T> successor(BSTNode<T> root) {
+        if (root == null)
+            return null;
         return minimum(root.right);
+    }
+
+    private BSTNode<T> delete(BSTNode<T> root, T element) {
+        if (root == null || element == null)
+            return null;
+
+        int comparison = element.compareTo(root.element);
+        if (comparison == 0) {
+            BSTNode<T> substitute = root.left != null ? predecessor(root) : successor(root);
+
+            if (substitute != null) {
+                if (substitute.element.compareTo(root.element) <= 0)
+                    root.left = delete(root.left, substitute.element);
+                else
+                    root.right = delete(root.right, substitute.element);
+                substitute.left = root.left;
+                substitute.right = root.right;
+            }
+
+            return substitute;
+        }
+
+        if (comparison < 0)
+            root.left = delete(root.left, element);
+        else
+            root.right = delete(root.right, element);
+        return root;
     }
 
     @Override
     public void delete(T element) {
         this.size--;
-
-        BSTNode<T> parent = getParent(element);
-        BSTNode<T> node = element.compareTo(parent.element) <= 0 ? parent.left : parent.right;
-
-        if (node == null)
-            return;
-
-        if (node.left == null && node.right == null) {
-            if (element.compareTo(parent.element) <= 0)
-                parent.left = null;
-            else
-                parent.right = null;
-            return;
-        }
-
-        T tmp = node.left != null ? predecessor(node) : successor(node);
-        delete(tmp);
-        node.element = tmp;
+        this.root = delete(root, element);
     }
 
     private List<T> preorder(BSTNode<T> root, List<T> elements) {
@@ -168,5 +162,10 @@ public class BST<T extends Comparable<T>> implements BinarySearchTree<T> {
     @Override
     public List<T> postorder() {
         return postorder(root, new ArrayList<T>(size));
+    }
+
+    @Override
+    public String toString() {
+        return root.toString();
     }
 }
